@@ -1,5 +1,47 @@
 <?php
 $quantidadeDeNotas = 4;
+$notas =array_fill(0,$quantidadeDeNotas,"");
+$erros = [];
+$resultado=null;
+if($_SERVER["REQUEST_METHOD"]=="POST"){
+
+    $soma=0;
+        for($i=0;$i<$quantidadeDeNotas;$i++){
+            $campo = "nota{$i}";
+            $valor = isset($_POST[$campo]) ? trim($_POST[$campo]):"";
+            $notas[$i]=$valor;
+            //verificação de erros
+            //se vaeiavel estiver vazia 
+            if($valor==""){
+
+                $erros[] = "A nota ".($i+1)."está vazia.";
+                continue;
+            }
+                //quando não for numero
+                if (!is_numeric ($valor)){
+
+                    $erros[] = "A nota ".($i+1)."prescisa ser numerica.";
+                    continue;
+                }
+                $num = (float)$valor;
+                if($num<0 || $num > 10){
+                    $erros[] = "A nota ".($i+1)."deve estar entre 0 e 10";
+                    continue;}
+                $soma +=$num;
+                }
+if(!$erros){
+
+    $media = $soma/$quantidadeDeNotas;
+
+    $resultado = [
+
+        'soma'=>$soma,
+        'media' =>$media,
+        'status' =>$media >=6 ? 'Aprovado' : 'Reprovado'];
+}
+
+        }
+
 ?>
 
 <!DOCTYPE html>
@@ -16,10 +58,29 @@ $quantidadeDeNotas = 4;
 <h1>Cadastro do aluno</h1>
 <p class= "foother">Exemplo A - inputs e processamento com 
     <strong>for</strong></p>
+    <?php if(!empty($erros)):?>
+        <div class = "msg erro">
+            <strong>Corrija os seguintes pontos:</strong>
+            <ul class="lista-erros">
+             <?php foreach ($erros as $e):?>
+                <li><?= htmlspecialchars($e)?></li>
+                <?php endforeach;?>
+            </ul>
+        </div>
+        <?php endif;?>
+
+<?php if($resultado):?>
+    <div class="msg ok resultados">
+        <p><strong>Soma:</strong><?=number_format($resultado['soma'],2,',','.')?></p>
+        <p><strong>Média:</strong><?=number_format($resultado['media'],2,',','.')?></p>
+        <p><strong>Status:</strong><?=$resultado['status']?></p>
+</div>
+<?php endif;?>
+
 </div>
 <form action="" method="post">
     <div class="grid">
-        <?php for($i=0;$i<$quantidadeDeNotas;$i++);?>
+        <?php for($i=0;$i<$quantidadeDeNotas;$i++):?>
         <div>
             <label for="nota<?=$i ?>">Nota<?= $i+1?>(0 a 10)</label>
             <input 
@@ -30,7 +91,8 @@ $quantidadeDeNotas = 4;
             value="<?=htmlspecialchars($notas[$i]);?>"
             required>
         </div>
-    </div>
+        <?php endfor;?></div>
+        <button type="submit">Calcular</button>
 </form>
 
 </div>    
